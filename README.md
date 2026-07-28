@@ -1,49 +1,28 @@
 # JobFinder
 
-Hey — I built this for my own job hunt in Ireland, and figured I’d share it.
+Local job search for Ireland. Collects listings from LinkedIn and Indeed, shows them on a dashboard, and supports Easy Apply automation in a dedicated browser profile.
 
-It’s a **local** app that pulls roles from **LinkedIn** and **Indeed**, drops them on a dashboard, and can run Easy Apply in a dedicated browser that remembers your login (and that annoying Indeed Cloudflare check).
+Runs on your machine only. Browser scraping is not designed for cloud hosting.
 
-No cloud deploy. No “upload your LinkedIn password to a mystery server.” Just your laptop, Docker, and a browser JobFinder controls.
+## Features
 
----
+| Feature | Description |
+|---------|-------------|
+| **Find jobs** | Search LinkedIn and Indeed.ie using your titles, counties, and posting age |
+| **Dashboard** | Review collected listings and open apply flows in JobFinder’s browser |
+| **Auto Apply** | Scan Easy Apply on LinkedIn or Indeed; dry-run or submit from the UI |
+| **Indeed unlock** | Complete Cloudflare once; access is saved for later applies |
+| **Applied** | Track jobs you have already applied to |
 
-## Why it exists
+Optional AI (Ollama, OpenAI, or keyword-only) can assist during apply. It is not required for collecting jobs.
 
-Job boards are great until you’re opening fifty tabs, re-logging in, and losing track of what you already applied to.
+## Requirements
 
-JobFinder is my answer to that:
+- Node.js 20+
+- Docker Desktop (MongoDB and Redis)
+- Playwright Chromium (`npm run playwright:install`)
 
-1. Tell it what you’re looking for  
-2. Hit **Find jobs**  
-3. Review the list  
-4. Auto Apply when you’re ready (dry-run first if you want)
-
-Optional AI (Ollama / OpenAI / keyword-only) can help during apply — but you don’t need it just to search.
-
----
-
-## What it does
-
-| Feature | In plain English |
-|--------|------------------|
-| **Find jobs** | Searches LinkedIn + Indeed.ie with your titles, counties, and “how recent?” |
-| **Dashboard** | Your collected listings in one place |
-| **Auto Apply** | Scan Easy Apply, then dry-run or submit for real |
-| **Indeed unlock** | Beat Cloudflare once; JobFinder saves that access |
-| **Applied** | A simple “already done” list so you don’t double-apply |
-
----
-
-## You’ll need
-
-- Node.js **20+**
-- **Docker Desktop** (MongoDB + Redis)
-- About 10 minutes and a cup of tea
-
----
-
-## Get it running
+## Quick start
 
 ```powershell
 git clone https://github.com/jamdever/JobFinder.git
@@ -56,84 +35,70 @@ copy .env.example .env
 copy config\profile.example.yaml config\profile.yaml
 copy apps\web\.env.local.example apps\web\.env.local
 
-# Drop your CV in here (gitignored — it stays private):
-#   resumes\resume.pdf
+# Place your CV at resumes\resume.pdf (gitignored)
 
 npm run docker:up
 npm run dev
 ```
 
-Open **[http://localhost:3000](http://localhost:3000)** and you’re in.
+Open [http://localhost:3000](http://localhost:3000).
 
-**First loop**
+1. **Settings** — set titles, counties (or all Ireland), and boards  
+2. **Dashboard → Find jobs** — collect listings  
+3. **Auto Apply** — sign in once in JobFinder’s browser, then scan or apply  
 
-1. **Settings** — titles, counties (or all Ireland), LinkedIn / Indeed  
-2. **Dashboard → Find jobs** — watch the progress bar do its thing  
-3. **Auto Apply** — log in once in JobFinder’s browser, then scan / apply  
+On macOS or Linux, use `cp` instead of `copy`.
 
-On Mac/Linux, use `cp` instead of `copy`. Same npm commands after that.
+## Commands
 
----
-
-## Handy commands
-
-| Command | What it does |
-|---------|----------------|
-| `npm run docker:up` | Wake up Mongo + Redis |
-| `npm run docker:down` | Put them back to sleep |
-| `npm run dev` | API + web + worker — the daily driver |
-| `npm run dev:clean` | Ports stuck? This frees 3000/4000 and starts fresh |
-| `npm run playwright:install` | Install Chromium for search / apply |
-| `npm run ollama:check` | “Is Ollama actually running?” |
+| Command | Description |
+|---------|-------------|
+| `npm run docker:up` | Start MongoDB and Redis |
+| `npm run docker:down` | Stop MongoDB and Redis |
+| `npm run dev` | Start API, web, and worker |
+| `npm run dev:clean` | Free ports 3000/4000, then start |
+| `npm run playwright:install` | Install Chromium |
+| `npm run ollama:check` | Check Ollama when `AI_PROVIDER=ollama` |
 | `npm run build` | Production build |
 
----
+## Configuration
 
-## Tweaking things
+Copy `.env.example` to `.env`. Defaults work with local Docker.
 
-Copy `.env.example` → `.env`. Defaults are fine for local Docker.
+| Variable | Description |
+|----------|-------------|
+| `MONGODB_URI` / `REDIS_URL` | Database and queue URLs |
+| `AI_PROVIDER` | `ollama`, `local`, or `openai` |
+| `OPENAI_API_KEY` | Required only for OpenAI |
+| `CAPSOLVER_API_KEY` | Optional Cloudflare solver for Indeed |
+| `NEXT_PUBLIC_API_URL` | Default `http://localhost:4000` |
 
-| Setting | Notes |
-|---------|--------|
-| `AI_PROVIDER` | `ollama` · `local` · `openai` |
-| `OPENAI_API_KEY` | Only if you’re on OpenAI |
-| `CAPSOLVER_API_KEY` | Optional — auto-solves Indeed Cloudflare |
-| `MONGODB_URI` / `REDIS_URL` | Leave as-is with `docker:up` |
+- `config/profile.yaml` — local profile (from `profile.example.yaml`, gitignored)  
+- `resumes/` — CV PDFs (gitignored)  
+- Search criteria are edited in Settings and stored in MongoDB  
 
-Titles and boards live in the **Settings** UI (MongoDB). Your CV goes in `resumes/` and stays gitignored.
-
----
-
-## Under the hood
+## Project layout
 
 ```
 apps/web          Next.js UI
-apps/api          Express + Playwright (search & apply)
-packages/shared   Shared types
-config/           Example profile (copy locally)
-resumes/          Your CV — never committed
-data/             Browser profile & session stuff — never committed
+apps/api          Express API, Playwright search, apply automation
+packages/shared   Shared types and helpers
+config/           Example profile
+resumes/          Local CV files (not committed)
+data/             Browser profile and runtime data (not committed)
 ```
 
-JobFinder uses its **own** Chromium profile, so your normal Chrome/Edge stays out of it.
+JobFinder uses its own Chromium profile under `data/`, separate from your everyday browser.
 
----
+## Privacy
 
-## Privacy (please don’t doxx yourself)
+The following are gitignored and should not be committed:
 
-These are gitignored on purpose:
-
-- `.env` and keys  
+- `.env` and API keys  
 - `config/profile.yaml`  
-- everything in `resumes/`  
-- `data/` (logins, Cloudflare unlock, local junk)
-
-If it’s personal, it doesn’t belong in a commit. Future you will thank present you.
-
----
+- files under `resumes/`  
+- `data/` (logins, Cloudflare unlock, local data)  
 
 ## License
 
-[MIT](./LICENSE) — use it, fork it, improve it, land the job.
-
-Built by [jamdever](https://github.com/jamdever) for hunting roles in Ireland without losing my mind.
+[MIT](./LICENSE)
