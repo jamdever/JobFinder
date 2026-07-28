@@ -1,0 +1,45 @@
+# Node
+node_modules/
+.next/
+dist/
+out/
+*.tsbuildinfo
+npm-debug.log*
+yarn-error.log*
+
+# Env / secrets (keep *.example tracked)
+.env
+.env.*
+!.env.example
+!.env.*.example
+*.local
+
+# Personal config & resumes (keep examples / README)
+config/profile.yaml
+resumes/*
+!resumes/README.txt
+
+# Runtime data (DB dumps, apply browser profile, screenshots)
+data/
+*.db
+screenshots/
+/applications/
+
+# Playwright
+playwright-report/
+test-results/
+
+# Python leftovers (if any)
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# IDE / OS / editor
+.idea/
+.vscode/
+.cursor/
+*.swp
+.DS_Store
+Thumbs.db
+Desktop.ini

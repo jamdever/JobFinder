@@ -1,0 +1,21 @@
+personal:
+  full_name: "Your Name"
+  email: "you@example.com"
+  location: "Ireland"
+
+resume:
+  path: "resumes/resume.pdf"
+
+preferences:
+  titles:
+    - "Junior Software Developer"
+  locations:
+    - "Ireland"
+  max_posted_days: 7
+  min_match_score: 0.35
+
+search:
+  sources:
+    - indeed
+    - linkedin
+  country: "Ireland"
